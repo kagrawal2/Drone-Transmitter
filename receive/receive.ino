@@ -45,6 +45,19 @@
 //#define ServoMIN_V  30  // Don't go to very end of servo travel
 //#define ServoMAX_V  150 // which may not be all the way from 0 to 180
 
+
+//////////////////////CONFIGURATION///////////////////////////////
+#define CHANNEL_NUMBER 12  //set the number of chanels
+#define CHANNEL_DEFAULT_VALUE 1500  //set the default servo value
+#define FRAME_LENGTH 22500  //set the PPM frame length in microseconds (1ms = 1000µs)
+#define PULSE_LENGTH 300  //set the pulse length
+#define onState 1  //set polarity of the pulses: 1 is positive, 0 is negative
+#define sigPin 9  //set PPM signal output pin on the arduino
+
+/*this array holds the servo values for the ppm signal
+ change theese values in your code (usually servo values move between 1000 and 2000)*/
+int ppm[CHANNEL_NUMBER];
+
 /*-----( Declare objects )-----*/
 /* Hardware configuration: Set up nRF24L01 radio on SPI bus plus (usually) pins 7 & 8 (Can be changed) */
 RF24 radio(CE_PIN, CSN_PIN);
@@ -60,7 +73,6 @@ byte addresses[][6] = {"1Node", "2Node"}; // These will be the names of the "Pip
 boolean hasHardware = true;
 
 int HorizontalJoystickReceived; // Variable to store received Joystick values
-
 int VerticalJoystickReceived;   // Variable to store received Joystick values
 
 /**
@@ -113,8 +125,25 @@ void setup()   /****** SETUP: RUNS ONCE ******/
   radio.startListening();
 
   //  radio.printDetails(); //Uncomment to show LOTS of debugging information
-}//--(end setup )---
 
+  //initiallize default ppm values
+  for(int i=0; i<CHANNEL_NUMBER; i++){
+      ppm[i]= CHANNEL_DEFAULT_VALUE;
+    }//--(end setup )---
+
+  pinMode(sigPin, OUTPUT);
+  digitalWrite(sigPin, !onState);  //set the PPM signal pin to the default state (off)
+  
+  cli();
+  TCCR1A = 0; // set entire TCCR1 register to 0
+  TCCR1B = 0;
+  
+  OCR1A = 100;  // compare match register, change this
+  TCCR1B |= (1 << WGM12);  // turn on CTC mode
+  TCCR1B |= (1 << CS11);  // 8 prescaler: 0,5 microseconds at 16mhz
+  TIMSK1 |= (1 << OCIE1A); // enable timer compare interrupt
+  sei();
+}
 
 void loop()   /****** LOOP: RUNS CONSTANTLY ******/
 {
@@ -152,21 +181,6 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
 
   } // END radio available
 
-  //  if (hasHardware)
-  //  {
-  //    /*-----( Calculate servo position values, send to the servos )-----*/
-  //    SoftwareServo::refresh();//refreshes servo to keep them updating
-  //    HorizontalJoystickReceived  = myData.Xposition;  // Get the values received
-  //    VerticalJoystickReceived    = myData.Yposition;
-  //
-  //    // scale it to use it with the servo (value between MIN and MAX)
-  //    HorizontalServoPosition  = map(HorizontalJoystickReceived, 0, 1023, ServoMIN_H , ServoMAX_H);
-  //    VerticalServoPosition    = map(VerticalJoystickReceived,   0, 1023, ServoMIN_V , ServoMAX_V);
-  //
-  ////    // tell servos to go to position
-  ////    HorizontalServo.write(HorizontalServoPosition);
-  ////    VerticalServo.write(VerticalServoPosition);
-  //  } // END hasHardware
   if (hasHardware)
   {
     int yaw = map(myData.XLposition, 1023, 0, PWM_MIN, PWM_MAX);
@@ -184,6 +198,42 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
     Serial.print(pitch);
     Serial.print(" Arm");
     Serial.println(arm);
+
+    ppm[0] = throttle;
+    ppm[1] = roll;
+    ppm[2] = pitch;
+    ppm[3] = yaw;
+    ppm[4] = arm;
+    
   }
 }
 
+ISR(TIMER1_COMPA_vect){  //leave this alone
+  static boolean state = true;
+  
+  TCNT1 = 0;
+  
+  if (state) {  //start pulse
+    digitalWrite(sigPin, onState);
+    OCR1A = PULSE_LENGTH * 2;
+    state = false;
+  } else{  //end pulse and calculate when to start the next pulse
+    static byte cur_chan_numb;
+    static unsigned int calc_rest;
+  
+    digitalWrite(sigPin, !onState);
+    state = true;
+
+    if(cur_chan_numb >= CHANNEL_NUMBER){
+      cur_chan_numb = 0;
+      calc_rest = calc_rest + PULSE_LENGTH;// 
+      OCR1A = (FRAME_LENGTH - calc_rest) * 2;
+      calc_rest = 0;
+    }
+    else{
+      OCR1A = (ppm[cur_chan_numb] - PULSE_LENGTH) * 2;
+      calc_rest = calc_rest + ppm[cur_chan_numb];
+      cur_chan_numb++;
+    }     
+  }
+}
