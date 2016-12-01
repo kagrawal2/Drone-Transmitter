@@ -71,9 +71,8 @@ byte addresses[][6] = {"1Node", "2Node"}; // These will be the names of the "Pip
 // Allows testing of radios and code without servo hardware. Set 'true' when servos connected
 //boolean hasHardware = false;  // Allows testing of radios and code without Joystick hardware.
 boolean hasHardware = true;
-
-int HorizontalJoystickReceived; // Variable to store received Joystick values
-int VerticalJoystickReceived;   // Variable to store received Joystick values
+int armed = 1000;
+int freqCount = 20;
 
 /**
   Create a data structure for transmitting and receiving data
@@ -188,6 +187,20 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
     int roll = map(myData.XRposition, 0, 1023, PWM_MIN, PWM_MAX);
     int pitch = map(myData.YRposition, 1023, 0, PWM_MIN, PWM_MAX);
     int arm = map(myData.switchOn, 0, 1, 1000, 2000);
+    if (freqCount == 0) {
+      if (arm > 1900) {
+        if (armed > 1900) {
+          armed = 1000;
+        } else if (armed < 1100) {
+          armed = 2000;
+        }
+      }
+      freqCount--;
+    } else {
+      freqCount = 20;
+      }
+    
+    
     Serial.print("Yaw");
     Serial.print(yaw);
     Serial.print(" Throttle");
@@ -203,7 +216,7 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
     ppm[1] = roll;
     ppm[2] = pitch;
     ppm[3] = yaw;
-    ppm[4] = arm;
+    ppm[4] = armed;
     
   }
 }
