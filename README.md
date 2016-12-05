@@ -12,5 +12,6 @@ Transmission of 2, 2-axis joysticks data and digital switch via Arduino Uno to A
 * 3-D designed and printed Transmitter
 * FPV Camera with live streaming
 
-
 ####Drone video will be available soon.
+###https://devpost.com/software/drone-transmitter
+
