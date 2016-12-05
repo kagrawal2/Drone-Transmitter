@@ -14,5 +14,5 @@ Transmission of 2, 2-axis joysticks data and digital switch via Arduino Uno to A
 * Laser Cut Drone Chassis
 * 3-D designed and printed Transmitter
 * FPV Camera with live streaming
-
+* 3-D designed and printed landing gear and camera mount
 
