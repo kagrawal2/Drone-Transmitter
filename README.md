@@ -1,10 +1,10 @@
-# Drone-Transmitter
+##Drone-Transmitter
 Code for custom Drone and transmitter build.
-##[Video](https://www.youtube.com/watch?v=jWmNdqT4Q9A&t=22s)
-##[More Info](https://devpost.com/software/drone-transmitter)
+###[Video](https://www.youtube.com/watch?v=jWmNdqT4Q9A&t=22s)
+###[More Info](https://devpost.com/software/drone-transmitter)
 
 
-##Summary
+###Summary
 Transmission of 2, 2-axis joysticks data and digital switch via Arduino Uno to Arduino Nano with nrf24L01+ Modules for Drone flight.
 
 ###Features
