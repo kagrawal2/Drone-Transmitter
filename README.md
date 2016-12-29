@@ -1,7 +1,7 @@
 # Drone-Transmitter
 Code for custom Drone and transmitter build.
-####[Video](https://www.youtube.com/watch?v=jWmNdqT4Q9A&t=22s)
-####[More Info](https://devpost.com/software/drone-transmitter)
+##[Video](https://www.youtube.com/watch?v=jWmNdqT4Q9A&t=22s)
+##[More Info](https://devpost.com/software/drone-transmitter)
 
 
 ##Summary
