@@ -182,10 +182,10 @@ void loop()   /****** LOOP: RUNS CONSTANTLY ******/
 
   if (hasHardware)
   {
-    int yaw = map(myData.XLposition, 1023, 0, PWM_MIN, PWM_MAX);
-    int throttle = map(myData.YLposition, 0, 1023, PWM_MIN, PWM_MAX);
-    int roll = map(myData.XRposition, 0, 1023, PWM_MIN, PWM_MAX);
-    int pitch = map(myData.YRposition, 1023, 0, PWM_MIN, PWM_MAX);
+    int yaw = map(myData.YLposition, 1023, 0, PWM_MIN, PWM_MAX);
+    int throttle = map(myData.XLposition, 0, 1023, PWM_MIN, PWM_MAX);
+    int roll = map(myData.XRposition, 1023, 0, PWM_MIN, PWM_MAX);
+    int pitch = map(myData.YRposition, 0, 1023, PWM_MIN, PWM_MAX);
     int arm = map(myData.switchOn, 0, 1, 1000, 2000);
     if (freqCount == 0) {
       if (arm > 1900) {
